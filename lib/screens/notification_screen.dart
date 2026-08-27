@@ -1,11 +1,10 @@
-import 'package:facebook_replication/models.dart';
-import 'package:facebook_replication/widgets/notification.dart';
+import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/notification.dart';
 import 'package:flutter/material.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
-  // Activity 2 - General Enhancement: 10-20 notifications
   List<NotificationModel> _sampleNotifications() {
     final now = DateTime.now();
     final names = [

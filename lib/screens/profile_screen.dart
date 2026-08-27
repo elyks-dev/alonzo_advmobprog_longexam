@@ -1,10 +1,12 @@
-import 'package:facebook_replication/constants.dart';
-import 'package:facebook_replication/models.dart';
-import 'package:facebook_replication/widgets/custom_button.dart';
-import 'package:facebook_replication/widgets/custom_font.dart';
-import 'package:facebook_replication/widgets/post_card.dart';
+import 'package:alonzo_advmobprog_longexam1/constants.dart';
+import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/custom_button.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/custom_font.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/post_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:alonzo_advmobprog_longexam1/services/auth_service.dart';
+import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,7 +16,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Activity 3 - Enhancement 3: reuse PostCard (formerly newsfeed_card) for wall posts
   List<PostModel> _profilePosts() {
     final now = DateTime.now();
     return [
@@ -32,10 +33,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _aboutTab() {
-    // Activity 3 - Enhancement 4: About tab
     return Padding(
       padding: EdgeInsets.symmetric(
-          horizontal: ScreenUtil().setWidth(20), vertical: ScreenUtil().setHeight(15)),
+          horizontal: ScreenUtil().setWidth(20),
+          vertical: ScreenUtil().setHeight(15)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -46,7 +47,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.bold,
           ), // CustomFont
           const Divider(),
-          _aboutRow(Icons.info_outline, 'Mobile developer | Flutter learner | Building CCITBook'),
+          _aboutRow(Icons.info_outline,
+              'Mobile developer | Flutter learner | Building CCITBook'),
           _aboutRow(Icons.school_outlined, 'Studying Mobile Programming'),
           _aboutRow(Icons.work_outline, 'Student Developer'),
           _aboutRow(Icons.location_on_outlined, 'Philippines'),
@@ -76,7 +78,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _photosTab() {
-    // Activity 3 - Enhancement 5: GridView class for the photos tab
     return GridView.builder(
       padding: EdgeInsets.all(ScreenUtil().setSp(5)),
       physics: const NeverScrollableScrollPhysics(),
@@ -111,7 +112,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Container(
                     height: ScreenUtil().setHeight(180),
-                    decoration: BoxDecoration(color: Colors.grey[300]),
+                    decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/holiday.png'),
+                            fit: BoxFit.cover)),
                   ), // Container - cover photo placeholder
                   Positioned(
                     bottom: -ScreenUtil().setHeight(45),
@@ -121,9 +125,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         CircleAvatar(
                           radius: ScreenUtil().setSp(45),
-                          backgroundColor: Colors.grey[400],
-                          child: Icon(Icons.person,
-                              size: ScreenUtil().setSp(50), color: Colors.white),
+                          backgroundImage:
+                              const AssetImage('lib/assets/images/owl.jpg'),
                         ), // CircleAvatar
                         Positioned(
                           bottom: 0,
@@ -132,7 +135,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             radius: ScreenUtil().setSp(13),
                             backgroundColor: Colors.grey[300],
                             child: Icon(Icons.camera_alt,
-                                size: ScreenUtil().setSp(14), color: Colors.black),
+                                size: ScreenUtil().setSp(14),
+                                color: Colors.black),
                           ), // CircleAvatar
                         ), // Positioned
                       ],
@@ -142,11 +146,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ), // Stack
               SizedBox(height: ScreenUtil().setHeight(55)),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Activity 3 - Enhancement 1: customize profile name
                     CustomFont(
                       text: 'Kyle Alonzo',
                       fontWeight: FontWeight.bold,
@@ -154,7 +158,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.black,
                     ), // CustomFont
                     SizedBox(height: ScreenUtil().setHeight(5)),
-                    // Activity 3 - Enhancement 2: customize followers/following count
                     Row(
                       children: [
                         CustomFont(
@@ -170,7 +173,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: Colors.grey,
                         ), // CustomFont
                         SizedBox(width: ScreenUtil().setWidth(10)),
-                        Icon(Icons.circle, size: ScreenUtil().setSp(5), color: Colors.grey),
+                        Icon(Icons.circle,
+                            size: ScreenUtil().setSp(5), color: Colors.grey),
                         SizedBox(width: ScreenUtil().setWidth(10)),
                         CustomFont(
                           text: '180',
@@ -233,17 +237,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 height: ScreenUtil().setHeight(2000),
                 child: TabBarView(
                   children: [
-                    // Enhancement 3: Wall posts (reuse PostCard)
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: _profilePosts().length,
-                      itemBuilder: (context, index) {
-                        return PostCard(post: _profilePosts()[index]);
-                      },
-                    ), // ListView.builder
-                    _aboutTab(), // Enhancement 4
-                    _photosTab(), // Enhancement 5
+                    FutureBuilder<int?>(
+                        future: AuthService().userId,
+                        builder: (context, userSnapshot) {
+                          if (!userSnapshot.hasData)
+                            return ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _profilePosts().length,
+                                itemBuilder: (_, i) =>
+                                    PostCard(post: _profilePosts()[i]));
+                          return FutureBuilder<List<PostModel>>(
+                              future: PostService()
+                                  .getPostsByUser(userSnapshot.data!),
+                              builder: (_, postsSnapshot) {
+                                final posts =
+                                    postsSnapshot.data ?? _profilePosts();
+                                if (postsSnapshot.connectionState ==
+                                    ConnectionState.waiting)
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                return ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: posts.length,
+                                    itemBuilder: (_, i) =>
+                                        PostCard(post: posts[i]));
+                              });
+                        }),
+                    _aboutTab(),
+                    _photosTab(),
                   ],
                 ), // TabBarView
               ), // SizedBox

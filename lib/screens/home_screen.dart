@@ -1,8 +1,10 @@
-import 'package:facebook_replication/constants.dart';
-import 'package:facebook_replication/screens/newsfeed_screen.dart';
-import 'package:facebook_replication/screens/notification_screen.dart';
-import 'package:facebook_replication/screens/profile_screen.dart';
-import 'package:facebook_replication/widgets/custom_font.dart';
+import 'package:alonzo_advmobprog_longexam1/constants.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/newsfeed_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/notification_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/profile_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/friends_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/menu_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/custom_font.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -17,8 +19,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
-  // Activity 2 - Enhancement 2: dynamic AppBar title (changes per selected screen)
-  final List<String> _titles = const ['CCITBook', 'Notifications', 'Profile'];
+  final List<String> _titles = const [
+    'CCITBook',
+    'Friends',
+    'Notifications',
+    'Menu',
+    'Profile'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -39,16 +46,15 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const NeverScrollableScrollPhysics(),
         children: const <Widget>[
           NewsfeedScreen(),
+          FriendsScreen(),
           NotificationScreen(),
+          MenuScreen(),
           ProfileScreen(),
         ], // <Widget>[]
         onPageChanged: (page) {
-          setState(() {
-            _selectedIndex = page;
-          });
+          setState(() => _selectedIndex = page);
         },
       ), // PageView
-      // Activity 2 - Enhancement 3: additional BottomNavigationBarItem entries
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false, // selected item
         showUnselectedLabels: false, // unselected item
@@ -57,7 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Friends'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications), label: 'Notifications'),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ], // []
@@ -68,41 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Maps the 3 real pages onto the 5 nav items (Friends & Menu are stubs).
-  int _currentBarIndex() {
-    switch (_selectedIndex) {
-      case 0:
-        return 0; // Home
-      case 1:
-        return 2; // Notifications
-      case 2:
-        return 4; // Profile
-      default:
-        return 0;
-    }
-  }
+  int _currentBarIndex() => _selectedIndex;
 
   void _onTappedBar(int value) {
-    switch (value) {
-      case 0:
-        setState(() => _selectedIndex = 0);
-        _pageController.jumpToPage(0);
-        break;
-      case 1:
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Friends - Coming soon')));
-        break;
-      case 2:
-        setState(() => _selectedIndex = 1);
-        _pageController.jumpToPage(1);
-        break;
-      case 3:
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Menu - Coming soon')));
-        break;
-      case 4:
-        setState(() => _selectedIndex = 2);
-        _pageController.jumpToPage(2);
-        break;
-    }
+    setState(() => _selectedIndex = value);
+    _pageController.jumpToPage(value);
   }
 }

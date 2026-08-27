@@ -1,12 +1,15 @@
-import 'package:facebook_replication/models.dart';
-import 'package:facebook_replication/widgets/post_card.dart';
+import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/post_card.dart';
 import 'package:flutter/material.dart';
+import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 
-class NewsfeedScreen extends StatelessWidget {
+class NewsfeedScreen extends StatefulWidget {
   const NewsfeedScreen({super.key});
+  @override
+  State<NewsfeedScreen> createState() => _NewsfeedScreenState();
+}
 
-  // Activity 2 - General Enhancement: 5-10 posts, each with number of likes,
-  // a date, and whether it has a placeholder image or none.
+class _NewsfeedScreenState extends State<NewsfeedScreen> {
   List<PostModel> _samplePosts() {
     final now = DateTime.now();
     return [
@@ -20,9 +23,9 @@ class NewsfeedScreen extends StatelessWidget {
         hasImage: false,
       ),
       PostModel(
-        userName: 'Kyle Alonzo'
-        ,
-        postContent: 'Holiday vibes! Enjoying the time with family and friends.',
+        userName: 'Kyle Alonzo',
+        postContent:
+            'Holiday vibes! Enjoying the time with family and friends.',
         date: now.subtract(const Duration(hours: 5)),
         likeCount: 67,
         commentCount: 12,
@@ -92,12 +95,20 @@ class NewsfeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posts = _samplePosts();
-    return ListView.builder(
-      itemCount: posts.length,
-      itemBuilder: (context, index) {
-        return PostCard(post: posts[index]);
+    return FutureBuilder<List<PostModel>>(
+      future: PostService().getPostModels(),
+      builder: (context, snapshot) {
+        final posts = snapshot.hasData && snapshot.data!.isNotEmpty
+            ? snapshot.data!
+            : _samplePosts();
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const Center(child: CircularProgressIndicator());
+        return RefreshIndicator(
+            onRefresh: () async => setState(() {}),
+            child: ListView.builder(
+                itemCount: posts.length,
+                itemBuilder: (_, index) => PostCard(post: posts[index])));
       },
-    ); // ListView.builder
+    );
   }
 }

@@ -1,5 +1,5 @@
-name: facebook_replication
-description: "CCITBook - Flutter social media replication (Activities 1-4)"
+name: alonzo_advmobprog_longexam1
+description: "CCITBook - Flutter social media replication"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_screenutil: ^5.9.3
+  shared_preferences: ^2.2.3
+  http: ^1.2.1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +23,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - lib/assets/images/
+  fonts:
+    - family: Frutiger
+      fonts:
+        - asset: lib/assets/fonts/FrutigerLTStd-Roman.otf
+    - family: Klavika
+      fonts:
+        - asset: lib/assets/fonts/KlavikaBoldBold.otf

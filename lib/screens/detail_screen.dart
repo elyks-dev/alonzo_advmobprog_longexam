@@ -1,8 +1,9 @@
-import 'package:facebook_replication/constants.dart';
-import 'package:facebook_replication/models.dart';
-import 'package:facebook_replication/widgets/custom_font.dart';
+import 'package:alonzo_advmobprog_longexam1/constants.dart';
+import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/custom_font.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 
 class DetailScreen extends StatefulWidget {
   final PostModel post;
@@ -15,11 +16,19 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   late int _likeCount;
+  final _commentController = TextEditingController();
+  final List<String> _comments = ['Great post!', 'Thanks for sharing this.'];
 
   @override
   void initState() {
     super.initState();
     _likeCount = widget.post.likeCount;
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   @override
@@ -105,7 +114,6 @@ class _DetailScreenState extends State<DetailScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Lab Activity 4 - Enhancement 3: like count increments on click
                     TextButton.icon(
                       onPressed: () {
                         setState(() {
@@ -140,6 +148,58 @@ class _DetailScreenState extends State<DetailScreen> {
                   ],
                 ), // Row
               ), // Container
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Comments',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      FutureBuilder<List<CommentModel>>(
+                        future: post.apiId == null
+                            ? Future.value(const <CommentModel>[])
+                            : PostService().getComments(post.apiId!),
+                        builder: (_, snapshot) {
+                          final apiComments =
+                              snapshot.data ?? const <CommentModel>[];
+                          final comments = [
+                            ...apiComments
+                                .map((c) => '${c.userName}: ${c.body}'),
+                            ..._comments
+                          ];
+                          return Column(
+                              children: comments
+                                  .map((comment) => ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const CircleAvatar(
+                                          radius: 16,
+                                          child: Icon(Icons.person, size: 18)),
+                                      title: Text(comment),
+                                      subtitle: const Text('Just now')))
+                                  .toList());
+                        },
+                      ),
+                      Row(children: [
+                        Expanded(
+                            child: TextField(
+                                controller: _commentController,
+                                decoration: const InputDecoration(
+                                    hintText: 'Write a comment...',
+                                    isDense: true))),
+                        IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () {
+                              if (_commentController.text.trim().isEmpty)
+                                return;
+                              setState(() {
+                                _comments.add(_commentController.text.trim());
+                                _commentController.clear();
+                              });
+                            })
+                      ]),
+                    ]),
+              ),
             ],
           ), // Column
         ), // SingleChildScrollView

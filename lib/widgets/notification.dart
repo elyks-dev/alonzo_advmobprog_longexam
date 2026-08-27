@@ -1,6 +1,6 @@
-import 'package:facebook_replication/models.dart';
-import 'package:facebook_replication/screens/detail_screen.dart';
-import 'package:facebook_replication/widgets/custom_font.dart';
+import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/screens/detail_screen.dart';
+import 'package:alonzo_advmobprog_longexam1/widgets/custom_font.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -12,7 +12,6 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      // Lab Activity 4 - Enhancement 1: clickable, same behavior as PostCard
       onTap: () {
         Navigator.push(
           context,
@@ -32,7 +31,6 @@ class NotificationTile extends StatelessWidget {
         padding: EdgeInsets.all(ScreenUtil().setSp(15)),
         child: Row(
           children: [
-            // Lab Activity 4 - Enhancement 2: image if available, person icon if not
             CircleAvatar(
               radius: ScreenUtil().setSp(25),
               backgroundColor: Colors.grey[300],
@@ -40,7 +38,8 @@ class NotificationTile extends StatelessWidget {
                   ? NetworkImage(notif.profileImageUrl)
                   : null,
               child: notif.profileImageUrl.isEmpty
-                  ? Icon(Icons.person, size: ScreenUtil().setSp(28), color: Colors.white)
+                  ? Icon(Icons.person,
+                      size: ScreenUtil().setSp(28), color: Colors.white)
                   : null,
             ), // CircleAvatar
             SizedBox(width: ScreenUtil().setWidth(10)),
@@ -67,7 +66,8 @@ class NotificationTile extends StatelessWidget {
                   ), // CustomFont
                   SizedBox(height: ScreenUtil().setSp(5)),
                   CustomFont(
-                    text: '${notif.date.month}/${notif.date.day}/${notif.date.year}',
+                    text:
+                        '${notif.date.month}/${notif.date.day}/${notif.date.year}',
                     fontSize: ScreenUtil().setSp(12),
                     color: Colors.grey.shade400,
                   ), // CustomFont
