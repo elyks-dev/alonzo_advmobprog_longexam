@@ -1,113 +1,107 @@
 import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 import 'package:alonzo_advmobprog_longexam1/widgets/post_card.dart';
 import 'package:flutter/material.dart';
-import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 
 class NewsfeedScreen extends StatefulWidget {
   const NewsfeedScreen({super.key});
+
   @override
   State<NewsfeedScreen> createState() => _NewsfeedScreenState();
 }
 
 class _NewsfeedScreenState extends State<NewsfeedScreen> {
-  List<PostModel> _samplePosts() {
-    final now = DateTime.now();
-    return [
-      PostModel(
-        userName: 'Cyrus Robles',
-        postContent: 'Kamusta, first day using CCITBook!',
-        date: now.subtract(const Duration(hours: 2)),
-        likeCount: 128,
-        commentCount: 15,
-        shareCount: 12,
-        hasImage: false,
-      ),
-      PostModel(
-        userName: 'Kyle Alonzo',
-        postContent:
-            'Holiday vibes! Enjoying the time with family and friends.',
-        date: now.subtract(const Duration(hours: 5)),
-        likeCount: 67,
-        commentCount: 12,
-        shareCount: 3,
-        hasImage: true,
-        imagePath: 'assets/images/holiday.png',
-      ),
-      PostModel(
-        userName: 'Bruce Wayne',
-        postContent: 'It\'s what you do that defines you.',
-        date: now.subtract(const Duration(hours: 8)),
-        likeCount: 54,
-        commentCount: 9,
-        shareCount: 2,
-        hasImage: true,
-        imagePath: 'assets/images/batman.png',
-      ),
-      PostModel(
-        userName: 'Clark Kent',
-        postContent: 'Coding session done, finally shipped the feature.',
-        date: now.subtract(const Duration(days: 1)),
-        likeCount: 41,
-        commentCount: 6,
-        shareCount: 1,
-        hasImage: false,
-      ),
-      PostModel(
-        userName: 'Diana Prince',
-        postContent: 'Excited for the upcoming hackathon!',
-        date: now.subtract(const Duration(days: 1, hours: 4)),
-        likeCount: 88,
-        commentCount: 20,
-        shareCount: 5,
-        hasImage: true,
-        imagePath: 'assets/images/hackathon.png',
-      ),
-      PostModel(
-        userName: 'Steve Rogers',
-        postContent: 'Passing the shield to the next generation of devs.',
-        date: now.subtract(const Duration(days: 2)),
-        likeCount: 76,
-        commentCount: 11,
-        shareCount: 4,
-        hasImage: false,
-      ),
-      PostModel(
-        userName: 'Tony Stark',
-        postContent: 'Just deployed to prod, what could go wrong.',
-        date: now.subtract(const Duration(days: 3)),
-        likeCount: 210,
-        commentCount: 33,
-        shareCount: 18,
-        hasImage: true,
-        imagePath: 'assets/images/deployment.png',
-      ),
-      PostModel(
-        userName: 'Natasha Romanoff',
-        postContent: 'Debugging is 90% patience, 10% luck.',
-        date: now.subtract(const Duration(days: 4)),
-        likeCount: 59,
-        commentCount: 7,
-        shareCount: 2,
-        hasImage: false,
-      ),
-    ];
+  late Future<List<PostModel>> _postsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  void _loadPosts() {
+    _postsFuture = PostService().getPostModels();
+  }
+
+  Future<void> _refreshPosts() async {
+    setState(() {
+      _loadPosts();
+    });
+
+    await _postsFuture;
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<PostModel>>(
-      future: PostService().getPostModels(),
+      future: _postsFuture,
       builder: (context, snapshot) {
-        final posts = snapshot.hasData && snapshot.data!.isNotEmpty
-            ? snapshot.data!
-            : _samplePosts();
-        if (snapshot.connectionState == ConnectionState.waiting)
-          return const Center(child: CircularProgressIndicator());
+        // Loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // Error
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 60,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Failed to load posts.",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    snapshot.error.toString(),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _loadPosts();
+                      });
+                    },
+                    child: const Text("Try Again"),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Empty list
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text("No posts available."),
+          );
+        }
+
+        final posts = snapshot.data!;
+
         return RefreshIndicator(
-            onRefresh: () async => setState(() {}),
-            child: ListView.builder(
-                itemCount: posts.length,
-                itemBuilder: (_, index) => PostCard(post: posts[index])));
+          onRefresh: _refreshPosts,
+          child: ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              return PostCard(post: posts[index]);
+            },
+          ),
+        );
       },
     );
   }
