@@ -1,5 +1,5 @@
 import 'package:alonzo_advmobprog_longexam1/constants.dart';
-import 'package:alonzo_advmobprog_longexam1/services/auth_service.dart';
+import 'package:alonzo_advmobprog_longexam1/services/user_service.dart';
 import 'package:alonzo_advmobprog_longexam1/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +17,7 @@ class _SignInScreenState extends State<SignInScreen> {
     if (name.text.trim().isEmpty || email.text.trim().isEmpty) return;
     setState(() => loading = true);
     try {
-      await AuthService().login(name.text.trim(), email.text.trim());
+      await UserService().login(name.text.trim(), email.text.trim());
       if (!mounted) return;
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const HomeScreen()));

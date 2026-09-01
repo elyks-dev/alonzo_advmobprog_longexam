@@ -1,5 +1,5 @@
 import 'package:alonzo_advmobprog_longexam1/constants.dart';
-import 'package:alonzo_advmobprog_longexam1/services/auth_service.dart';
+import 'package:alonzo_advmobprog_longexam1/services/user_service.dart';
 import 'package:alonzo_advmobprog_longexam1/screens/home_screen.dart';
 import 'package:alonzo_advmobprog_longexam1/screens/signin_screen.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _start() async {
     await Future<void>.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
-    final logged = await AuthService().isLoggedIn();
+    final logged = await UserService().isLoggedIn();
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(

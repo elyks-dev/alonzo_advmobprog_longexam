@@ -1,12 +1,104 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/user.dart';
 
 class UserService {
-  static const host = 'https://dummyjson.com';
+  static const String host = 'https://dummyjson.com';
+
+  static const _loggedIn = 'logged_in';
+  static const _name = 'user_name';
+  static const _email = 'user_email';
+  static const _userId = 'user_id';
+  static const _token = 'access_token';
+
+  // =========================
+  // AUTHENTICATION
+  // =========================
+
+  Future<bool> isLoggedIn() async =>
+      (await SharedPreferences.getInstance()).getBool(_loggedIn) ?? false;
+
+  Future<void> login(String username, String password) async {
+    final response = await http.post(
+      Uri.parse('$host/user/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+        'expiresInMins': 60,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Invalid username or password');
+    }
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool(_loggedIn, true);
+    await prefs.setInt(_userId, data['id'] as int);
+    await prefs.setString(
+      _name,
+      '${data['firstName'] ?? ''} ${data['lastName'] ?? ''}'.trim(),
+    );
+    await prefs.setString(_email, data['email'] ?? '');
+    await prefs.setString(_token, data['accessToken'] ?? '');
+  }
+
+  Future<void> signOut() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove(_loggedIn);
+    await prefs.remove(_userId);
+    await prefs.remove(_name);
+    await prefs.remove(_email);
+    await prefs.remove(_token);
+  }
+
+  // =========================
+  // SAVED USER DATA
+  // =========================
+
+  Future<int?> get userId async =>
+      (await SharedPreferences.getInstance()).getInt(_userId);
+
+  Future<String> get name async =>
+      (await SharedPreferences.getInstance()).getString(_name) ?? '';
+
+  Future<String> get email async =>
+      (await SharedPreferences.getInstance()).getString(_email) ?? '';
+
+  Future<String?> get token async =>
+      (await SharedPreferences.getInstance()).getString(_token);
+
+  // =========================
+  // DUMMYJSON USER PROFILE
+  // =========================
+
   Future<UserModel> getUser(int id) async {
-    final response = await http.get(Uri.parse('$host/users/$id'));
-    if (response.statusCode != 200) throw Exception('Unable to load user');
-    return UserModel.fromJson(jsonDecode(response.body));
+    final response = await http.get(
+      Uri.parse('$host/users/$id'),
+    );
+
+    if (response.statusCode == 200) {
+      return UserModel.fromJson(jsonDecode(response.body));
+    }
+
+    throw Exception('Unable to load user');
+  }
+
+  /// Convenience method: returns the currently logged-in user's full profile.
+  Future<UserModel> getCurrentUser() async {
+    final id = await userId;
+
+    if (id == null) {
+      throw Exception('No logged-in user');
+    }
+
+    return getUser(id);
   }
 }

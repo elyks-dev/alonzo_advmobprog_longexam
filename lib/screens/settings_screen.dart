@@ -1,6 +1,6 @@
   import 'package:alonzo_advmobprog_longexam1/constants.dart';
 import 'package:alonzo_advmobprog_longexam1/screens/signin_screen.dart';
-import 'package:alonzo_advmobprog_longexam1/services/auth_service.dart';
+import 'package:alonzo_advmobprog_longexam1/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Sign out', style: TextStyle(color: Colors.red)),
             onTap: () async {
-              await AuthService().signOut();
+              await UserService().signOut();
               if (!context.mounted) return;
               Navigator.pushAndRemoveUntil(
                   context,

@@ -1,12 +1,13 @@
 import 'package:alonzo_advmobprog_longexam1/constants.dart';
 import 'package:alonzo_advmobprog_longexam1/models.dart';
+import 'package:alonzo_advmobprog_longexam1/models/user.dart';
+import 'package:alonzo_advmobprog_longexam1/services/user_service.dart';
+import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 import 'package:alonzo_advmobprog_longexam1/widgets/custom_button.dart';
 import 'package:alonzo_advmobprog_longexam1/widgets/custom_font.dart';
 import 'package:alonzo_advmobprog_longexam1/widgets/post_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:alonzo_advmobprog_longexam1/services/auth_service.dart';
-import 'package:alonzo_advmobprog_longexam1/services/post_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,47 +17,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  List<PostModel> _profilePosts() {
-    final now = DateTime.now();
-    return [
-      PostModel(
-        userName: 'Kyle Alonzo',
-        postContent: 'Testing my CCITBook profile wall post! #CCITBook',
-        date: now.subtract(const Duration(hours: 1)),
-        likeCount: 42,
-        commentCount: 5,
-        shareCount: 1,
-        hasImage: true,
-        imagePath: 'assets/images/minion.png',
-      ),
-    ];
-  }
-
-  Widget _aboutTab() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: ScreenUtil().setWidth(20),
-          vertical: ScreenUtil().setHeight(15)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomFont(
-            text: 'About',
-            fontSize: ScreenUtil().setSp(16),
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ), // CustomFont
-          const Divider(),
-          _aboutRow(Icons.info_outline,
-              'Mobile developer | Flutter learner | Building CCITBook'),
-          _aboutRow(Icons.school_outlined, 'Studying Mobile Programming'),
-          _aboutRow(Icons.work_outline, 'Student Developer'),
-          _aboutRow(Icons.location_on_outlined, 'Philippines'),
-          _aboutRow(Icons.email_outlined, 'student@example.com'),
-        ],
-      ), // Column
-    ); // Padding
-  }
+  final UserService _userService = UserService();
 
   Widget _aboutRow(IconData icon, String text) {
     return Padding(
@@ -70,11 +31,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
               text: text,
               fontSize: ScreenUtil().setSp(13),
               color: Colors.black87,
-            ), // CustomFont
-          ), // Expanded
+            ),
+          ),
         ],
-      ), // Row
-    ); // Padding
+      ),
+    );
+  }
+
+  Widget _aboutTab(UserModel user) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: ScreenUtil().setWidth(20),
+        vertical: ScreenUtil().setHeight(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CustomFont(
+            text: 'About',
+            fontSize: ScreenUtil().setSp(16),
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          const Divider(),
+
+          _aboutRow(Icons.person_outline, user.username),
+          _aboutRow(Icons.work_outline, user.companyTitle),
+          _aboutRow(Icons.location_on_outlined, user.city),
+          _aboutRow(Icons.email_outlined, user.email),
+          _aboutRow(Icons.phone_outlined, user.phone),
+          _aboutRow(Icons.info_outline, user.gender),
+        ],
+      ),
+    );
   }
 
   Widget _photosTab() {
@@ -87,194 +76,238 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisCount: 3,
         crossAxisSpacing: 4,
         mainAxisSpacing: 4,
-      ), // SliverGridDelegateWithFixedCrossAxisCount
+      ),
       itemBuilder: (context, index) {
         return Container(
           color: Colors.grey[300],
           child: const Icon(Icons.image_outlined, color: Colors.grey),
-        ); // Container
+        );
       },
-    ); // GridView.builder
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Container(
-        color: Colors.white,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: ScreenUtil().setHeight(180),
-                    decoration: const BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/holiday.png'),
-                            fit: BoxFit.cover)),
-                  ), // Container - cover photo placeholder
-                  Positioned(
-                    bottom: -ScreenUtil().setHeight(45),
-                    left: ScreenUtil().setWidth(20),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: ScreenUtil().setSp(45),
-                          backgroundImage:
-                              const AssetImage('lib/assets/images/owl.jpg'),
-                        ), // CircleAvatar
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            radius: ScreenUtil().setSp(13),
-                            backgroundColor: Colors.grey[300],
-                            child: Icon(Icons.camera_alt,
-                                size: ScreenUtil().setSp(14),
-                                color: Colors.black),
-                          ), // CircleAvatar
-                        ), // Positioned
-                      ],
-                    ), // Stack
-                  ), // Positioned
-                ],
-              ), // Stack
-              SizedBox(height: ScreenUtil().setHeight(55)),
-              Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomFont(
-                      text: 'Kyle Alonzo',
-                      fontWeight: FontWeight.bold,
-                      fontSize: ScreenUtil().setSp(20),
-                      color: Colors.black,
-                    ), // CustomFont
-                    SizedBox(height: ScreenUtil().setHeight(5)),
-                    Row(
-                      children: [
-                        CustomFont(
-                          text: '2.3K',
-                          fontSize: ScreenUtil().setSp(15),
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ), // CustomFont
-                        SizedBox(width: ScreenUtil().setWidth(5)),
-                        CustomFont(
-                          text: 'followers',
-                          fontSize: ScreenUtil().setSp(15),
-                          color: Colors.grey,
-                        ), // CustomFont
-                        SizedBox(width: ScreenUtil().setWidth(10)),
-                        Icon(Icons.circle,
-                            size: ScreenUtil().setSp(5), color: Colors.grey),
-                        SizedBox(width: ScreenUtil().setWidth(10)),
-                        CustomFont(
-                          text: '180',
-                          fontSize: ScreenUtil().setSp(15),
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ), // CustomFont
-                        SizedBox(width: ScreenUtil().setWidth(5)),
-                        CustomFont(
-                          text: 'following',
-                          fontSize: ScreenUtil().setSp(15),
-                          color: Colors.grey,
-                        ), // CustomFont
-                      ],
-                    ), // Row
-                    SizedBox(height: ScreenUtil().setHeight(10)),
-                    Row(
-                      children: [
-                        CustomButton(buttonName: 'Follow', onPressed: () {}),
-                        SizedBox(width: ScreenUtil().setWidth(10)),
-                        CustomButton(
-                          buttonName: 'Message',
-                          buttonType: 'outlined',
-                          onPressed: () {},
-                        ), // CustomButton
-                      ],
-                    ), // Row
-                  ],
-                ), // Column
-              ), // Padding
-              SizedBox(height: ScreenUtil().setHeight(10)),
-              TabBar(
-                indicatorColor: APP_DARK_PRIMARY,
-                labelColor: Colors.black,
-                tabs: [
-                  Tab(
-                    child: CustomFont(
-                      text: 'Posts',
-                      fontSize: ScreenUtil().setSp(15),
-                      color: Colors.black,
-                    ), // CustomFont
-                  ), // Tab
-                  Tab(
-                    child: CustomFont(
-                      text: 'About',
-                      fontSize: ScreenUtil().setSp(15),
-                      color: Colors.black,
-                    ), // CustomFont
-                  ), // Tab
-                  Tab(
-                    child: CustomFont(
-                      text: 'Photos',
-                      fontSize: ScreenUtil().setSp(15),
-                      color: Colors.black,
-                    ), // CustomFont
-                  ), // Tab
-                ],
-              ), // TabBar
-              SizedBox(
-                height: ScreenUtil().setHeight(2000),
-                child: TabBarView(
-                  children: [
-                    FutureBuilder<int?>(
-                        future: AuthService().userId,
-                        builder: (context, userSnapshot) {
-                          if (!userSnapshot.hasData)
-                            return ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _profilePosts().length,
-                                itemBuilder: (_, i) =>
-                                    PostCard(post: _profilePosts()[i]));
-                          return FutureBuilder<List<PostModel>>(
-                              future: PostService()
-                                  .getPostsByUser(userSnapshot.data!),
-                              builder: (_, postsSnapshot) {
-                                final posts =
-                                    postsSnapshot.data ?? _profilePosts();
+    return FutureBuilder<int?>(
+      future: UserService().userId,
+      builder: (context, idSnapshot) {
+        if (!idSnapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return FutureBuilder<UserModel>(
+          future: _userService.getUser(idSnapshot.data!),
+          builder: (context, userSnapshot) {
+            if (!userSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final user = userSnapshot.data!;
+
+            return DefaultTabController(
+              length: 3,
+              child: Container(
+                color: Colors.white,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Cover + Profile Picture
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            height: ScreenUtil().setHeight(180),
+                            decoration: const BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage('assets/images/holiday.png'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: -ScreenUtil().setHeight(45),
+                            left: ScreenUtil().setWidth(20),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: ScreenUtil().setSp(45),
+                                  backgroundImage: NetworkImage(user.image),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: CircleAvatar(
+                                    radius: ScreenUtil().setSp(13),
+                                    backgroundColor: Colors.grey[300],
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      size: ScreenUtil().setSp(14),
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: ScreenUtil().setHeight(55)),
+
+                      // Name and Stats
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: ScreenUtil().setWidth(20)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomFont(
+                              text: user.name,
+                              fontWeight: FontWeight.bold,
+                              fontSize: ScreenUtil().setSp(20),
+                              color: Colors.black,
+                            ),
+
+                            SizedBox(height: ScreenUtil().setHeight(5)),
+
+                            Row(
+                              children: [
+                                CustomFont(
+                                  text: '${user.id * 230}',
+                                  fontSize: ScreenUtil().setSp(15),
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                SizedBox(width: ScreenUtil().setWidth(5)),
+                                CustomFont(
+                                  text: 'followers',
+                                  fontSize: ScreenUtil().setSp(15),
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(width: ScreenUtil().setWidth(10)),
+                                Icon(
+                                  Icons.circle,
+                                  size: ScreenUtil().setSp(5),
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(width: ScreenUtil().setWidth(10)),
+                                CustomFont(
+                                  text: '${user.id * 18}',
+                                  fontSize: ScreenUtil().setSp(15),
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                SizedBox(width: ScreenUtil().setWidth(5)),
+                                CustomFont(
+                                  text: 'following',
+                                  fontSize: ScreenUtil().setSp(15),
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: ScreenUtil().setHeight(10)),
+
+                            Row(
+                              children: [
+                                CustomButton(
+                                  buttonName: 'Follow',
+                                  onPressed: () {},
+                                ),
+                                SizedBox(width: ScreenUtil().setWidth(10)),
+                                CustomButton(
+                                  buttonName: 'Message',
+                                  buttonType: 'outlined',
+                                  onPressed: () {},
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: ScreenUtil().setHeight(10)),
+
+                      // Tabs
+                      TabBar(
+                        indicatorColor: APP_DARK_PRIMARY,
+                        labelColor: Colors.black,
+                        tabs: [
+                          Tab(
+                            child: CustomFont(
+                              text: 'Posts',
+                              fontSize: ScreenUtil().setSp(15),
+                              color: Colors.black,
+                            ),
+                          ),
+                          Tab(
+                            child: CustomFont(
+                              text: 'About',
+                              fontSize: ScreenUtil().setSp(15),
+                              color: Colors.black,
+                            ),
+                          ),
+                          Tab(
+                            child: CustomFont(
+                              text: 'Photos',
+                              fontSize: ScreenUtil().setSp(15),
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(
+                        height: ScreenUtil().setHeight(2000),
+                        child: TabBarView(
+                          children: [
+                            // POSTS
+                            FutureBuilder<List<PostModel>>(
+                              future: PostService().getPostsByUser(user.id),
+                              builder: (context, postsSnapshot) {
                                 if (postsSnapshot.connectionState ==
-                                    ConnectionState.waiting)
+                                    ConnectionState.waiting) {
                                   return const Center(
-                                      child: CircularProgressIndicator());
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+
+                                final posts = postsSnapshot.data ?? [];
+
+                                if (posts.isEmpty) {
+                                  return const Center(
+                                    child: Text('No posts yet.'),
+                                  );
+                                }
+
                                 return ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: posts.length,
-                                    itemBuilder: (_, i) =>
-                                        PostCard(post: posts[i]));
-                              });
-                        }),
-                    _aboutTab(),
-                    _photosTab(),
-                  ],
-                ), // TabBarView
-              ), // SizedBox
-            ],
-          ), // Column
-        ), // SingleChildScrollView
-      ), // Container
-    ); // DefaultTabController
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: posts.length,
+                                  itemBuilder: (_, index) =>
+                                      PostCard(post: posts[index]),
+                                );
+                              },
+                            ),
+
+                            // ABOUT
+                            _aboutTab(user),
+
+                            // PHOTOS
+                            _photosTab(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
